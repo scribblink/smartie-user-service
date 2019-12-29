@@ -2,12 +2,15 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
-	pb "github.com/scribblink/smartie-user-service/proto/user"
+	pb "github.com/scribblink/smartie-user-service/proto/auth"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/context"
 )
+
+const topic = "user.created"
 
 type service struct {
 	repo         Repository
@@ -53,16 +56,32 @@ func (srv *service) Auth(ctx context.Context, req *pb.User, res *pb.Token) error
 }
 
 func (srv *service) Create(ctx context.Context, req *pb.User, res *pb.Response) error {
+	log.Println("Creating user: ", req)
+
 	// Generates a hashed version of our password
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return errors.New(fmt.Sprintf("error hashing password: %v", err))
 	}
+
 	req.Password = string(hashedPass)
 	if err := srv.repo.Create(req); err != nil {
+		return errors.New(fmt.Sprintf("error creating user: %v", err))
+	}
+
+	token, err := srv.tokenService.Encode(req)
+	if err != nil {
 		return err
 	}
+
 	res.User = req
+	res.Token = &pb.Token{Token: token}
+
+	/*
+		if err := srv.Publisher.Publish(ctx, req); err != nil {
+			return errors.New(fmt.Sprintf("error publishing event: %v", err))
+		}*/
+
 	return nil
 }
 

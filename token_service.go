@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/dgrijalva/jwt-go"
-	pb "github.com/scribblink/smartie-user-service/proto/user"
+	pb "github.com/scribblink/smartie-user-service/proto/auth"
 )
 
 var (
@@ -10,7 +10,7 @@ var (
 	// as a salt when hashing our tokens.
 	// Please make your own way more secure than this,
 	// use a randomly generated md5 hash or something.
-	key = []byte("mySuperSecretKeyLol")
+	key = []byte("4d33fd5145974fcdaa8d6ed0f2e3a365")
 )
 
 // CustomClaims is our custom metadata, which will be hashed
@@ -40,9 +40,8 @@ func (srv *TokenService) Decode(token string) (*CustomClaims, error) {
 	// Validate the token and return the custom claims
 	if claims, ok := tokenType.Claims.(*CustomClaims); ok && tokenType.Valid {
 		return claims, nil
-	} else {
-		return nil, err
 	}
+	return nil, err
 }
 
 // Encode a claim into a JWT

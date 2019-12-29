@@ -2,9 +2,10 @@ package main
 
 import (
 	"github.com/jinzhu/gorm"
-	pb "github.com/scribblink/smartie-user-service/proto/user"
+	pb "github.com/scribblink/smartie-user-service/proto/auth"
 )
 
+// Repository interface
 type Repository interface {
 	GetAll() ([]*pb.User, error)
 	Get(id string) (*pb.User, error)
@@ -12,10 +13,12 @@ type Repository interface {
 	GetByEmailAndPassword(user *pb.User) (*pb.User, error)
 }
 
+// UserRepository interface
 type UserRepository struct {
 	db *gorm.DB
 }
 
+// GetAll function of UserResponsitory 
 func (repo *UserRepository) GetAll() ([]*pb.User, error) {
 	var users []*pb.User
 	if err := repo.db.Find(&users).Error; err != nil {
@@ -24,6 +27,7 @@ func (repo *UserRepository) GetAll() ([]*pb.User, error) {
 	return users, nil
 }
 
+// Get function of UserResponsitory 
 func (repo *UserRepository) Get(id string) (*pb.User, error) {
 	var user *pb.User
 	user.Id = id
@@ -33,6 +37,7 @@ func (repo *UserRepository) Get(id string) (*pb.User, error) {
 	return user, nil
 }
 
+// GetByEmailAndPassword function of UserResponsitory 
 func (repo *UserRepository) GetByEmailAndPassword(user *pb.User) (*pb.User, error) {
 	if err := repo.db.First(&user).Error; err != nil {
 		return nil, err
@@ -40,6 +45,7 @@ func (repo *UserRepository) GetByEmailAndPassword(user *pb.User) (*pb.User, erro
 	return user, nil
 }
 
+// Create function of UserResponsitory 
 func (repo *UserRepository) Create(user *pb.User) error {
 	if err := repo.db.Create(user).Error; err != nil {
 		return err
